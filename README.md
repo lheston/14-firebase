@@ -73,9 +73,14 @@ Setting up firebase involves a number of steps:
     Recall the steps to using an Angular library:
     
     1. Include the [AngularFire](https://github.com/firebase/angularfire/blob/master/docs/quickstart.md#2-add-script-dependencies) script _below_ the Firebase library but _above_ your `app.js` file. Be careful not to include the Firebase library twice!
-
+    
+        - Make sure to get the latest version of AngularFire!! As of this writing, it is version `2.0.1`.
+        
     2. [Inject the module](https://github.com/firebase/angularfire/blob/master/docs/quickstart.md#4-inject-the-angularfire-services) into your Angular app. Note that this module provides a couple of _services_ we inject into our controller, but we'll go over those as needed.
 
+        ```js
+        var app = angular.module('ChirperApp', ['firebase']);
+        ```
 
 Make sure to open the web page (from a local webserver) and check the developer console for errors to make sure everything is set up and integrated correctly. You won't see much to begin with.
 
@@ -95,7 +100,7 @@ We'll start by enabling user authentication: allowing users to sign up for and l
     Next we want to show the sign-up form on the web page. This is defined in a _partial_ `partials/signup-form.html`. While we could set up a routing system to display this partial, a simpler solution is to use the [`ng-include`](https://docs.angularjs.org/api/ng/directive/ngInclude) directive to have Angular load the partial at a particular place. We tend to put this directive on a `<div>`:
 
     ```html
-    <div ng-include="path/to/partial.html"></div>
+    <div ng-include="'path/to/partial.html'"></div>
     ```
 
     Use this directive to load the sign-up form inside the `<main>` element. When you refresh the web page, you should now see the sign-up form.
@@ -130,13 +135,13 @@ We'll start by enabling user authentication: allowing users to sign up for and l
 
     - **IMPORTANT TIP** You don't need to come up with real email addresses for testing. Try using `a@a.com`, `b@a.com`, `c@a.com`, etc. Similarly, `password` works fine for testing passwords (though you should never do that in real life!)
 
-        You can also view all the users you create on the Firebase Web Console (under Auth > Users).
+        You will also be able to view all the users you create on the Firebase Web Console (under Auth > Users) once you have some, as well as do things like delete any testing accounts.
 
-    Many directives (such as `ng-nclude` and `ng-if`) create what is called a new [child scope](https://docs.angularjs.org/guide/scope). Variables in the outside (parent) `$scope` are accessible inside the child, but variables added inside the child scope will not be accessible outside of it. This is just like how scoping works in Java:
+    Many directives (such as `ng-include` and `ng-if`) create what is called a new [child scope](https://docs.angularjs.org/guide/scope). Variables in the outside (parent) `$scope` are accessible inside the child, but variables added inside the child scope will not be accessible outside of it. This is just like how scoping works in Java:
     
     ```java
     int outside = 1;   
-    if(...) {
+    if(expression) {
       int inside = 2;  
       //inside AND outside accessible here
 
@@ -172,6 +177,7 @@ We'll start by enabling user authentication: allowing users to sign up for and l
     This method returns a _Promise_, so you should use the `.then()` method to do further work after the user is created (e.g., logging that they have been created):
     
     ```js
+    //do this INSIDE the signUp() function!
     Auth.$createUserWithEmailAndPassword($scope.newUser.email, $scope.newUser.password)
         .then(function(firebaseUser) {
            console.log('user created: '+firebaseUser.uid);
@@ -294,6 +300,7 @@ Now we can add code to our controller to start interacting with the JOITC databa
 
     ```js
     //get reference to the "root" of the database: the containing JSON
+    //generally put this near the "top" of the controller (not in another function)
     var baseRef = firebase.database().ref();
     ```
 
@@ -311,7 +318,7 @@ Now we can add code to our controller to start interacting with the JOITC databa
 
     Inside the `signUp()` function, _after_ you've created the user (in the `.then()`, create a new local variable (_not_ on scope) called `userData`, which is an object with a key `handle` and a key `avatar`. Assign the `$scope.newUser.handle` and `$scope.newUser.avatar` models from the form to this object.
     
-    You will then need to create a new child node in the JOITC "users" value which has a key of the user's id. Then use the `set` method to assign some data to that new key (which you have access to because the rule we wrote said so!)
+    Still inside the callback, you will then need to create a new child node in the JOITC "users" value which has a key of the user's id. Then use the `set` method to assign some data to that new key (which you have access to because the rule we wrote said so!)
     
     ```js
     var newUserRef = usersRef.child(firebaseUser.uid);
